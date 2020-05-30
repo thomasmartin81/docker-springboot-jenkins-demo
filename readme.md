@@ -2,7 +2,7 @@
 This project represents an example of a Jenkins pipeline with springboot and docker. 
 It uses git as scm. Every time a git push will be placed, jenkins will detect it and run the jenkinspipeline.
 Only on the master branch, it will build a docker image and deploy it to the local docker host
-on port 8080.<br> 
+on port 80.<br> 
 The example has version and health check functionality to have a better hello world project. ;)
 
 ## DevOp-System 
