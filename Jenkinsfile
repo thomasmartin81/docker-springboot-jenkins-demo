@@ -3,8 +3,9 @@ pipeline {
 
     environment {
         dockerBuilderImageName = 'maven:3-openjdk-11'
+        dockerPushRegistry = '192.168.20.14:8082'
+        dockerPushRegistryUrl = "http://${dockerPushRegistry}"
         dockerPullRegistryUrl = 'http://192.168.20.14:8083'
-        dockerPushRegistryUrl = 'http://192.168.20.14:8082'
         dockerRegistryCredentialsId = 'devopvm-docker-registry'
         dockerBuildImageName = 'docker-springboot-demo'
         dockerContainerName = 'docker-springboot-demo'
@@ -61,6 +62,13 @@ pipeline {
                     docker.withRegistry("${dockerPushRegistryUrl}", "${dockerRegistryCredentialsId}") {
                         dockerImage.push()
                     }
+
+                }
+            }
+
+            post {
+                always {
+                    sh "docker rmi ${dockerBuildImageName}"
                 }
             }
         }
@@ -70,10 +78,12 @@ pipeline {
             steps {
                 echo 'redeploy new container'
                 script {
-                    sh """
-                        docker rm -f ${dockerContainerName} 2&> /dev/null || true
-                        docker run --rm -d -p 80:8080 --name ${dockerContainerName} ${dockerBuildImageName}
-                        """
+                    docker.withRegistry("${dockerPushRegistryUrl}", "${dockerRegistryCredentialsId}") {
+                        sh """
+                            docker rm -f ${dockerContainerName} 2&> /dev/null || true
+                            docker run --rm -d -p 80:8080 --name ${dockerContainerName} ${dockerPushRegistry}/${dockerBuildImageName}
+                            """
+                    }
                 }
             }
         }
